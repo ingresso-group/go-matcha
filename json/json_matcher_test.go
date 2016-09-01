@@ -27,6 +27,7 @@ type ExpectedJSONComplex struct {
 		Attributes struct {
 			StringField string `json:"string_field"`
 		} `json:"attributes"`
+		Success bool `json:"success"`
 	} `json:"result"`
 }
 
@@ -224,7 +225,7 @@ func TestJSONArrayMatching(t *testing.T) {
 
 		Convey("When has same structure as actual JSON", func() {
 
-			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" } } }, { "result": { "attributes": { "string_field": "wonderful" } } } ]`)
+			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "wonderful" }, "success": true } } ]`)
 
 			Convey("It should return success", func() {
 				success := ShouldMatchExpectedResponse(fakeJSON, expected)
@@ -235,11 +236,23 @@ func TestJSONArrayMatching(t *testing.T) {
 
 		Convey("When has different structure as actual JSON", func() {
 
-			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" } } }, { "result": { "attributes": 0 } } ]`)
+			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "fantastic" } } } ]`)
 
-			Convey("It should return success", func() {
+			Convey("It should return the expected error", func() {
 				success := ShouldMatchExpectedResponse(fakeJSON, expected)
-				expectedErrString := "Was expecting a JSON object for field: attributes"
+				expectedErrString := "No field 'success' found in response JSON"
+				So(success, ShouldStartWith, expectedErrString)
+			})
+
+		})
+
+		Convey("When there are several differences in structure to actual JSON", func() {
+
+			fakeJSON := []byte(`[ { "result": {} }, { "result": { "attributes": { "string_field": "fantastic" } } } ]`)
+
+			Convey("It should return several errors", func() {
+				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				expectedErrString := "No field 'attributes' found in response JSON\nNo field 'success' found in response JSON"
 				So(success, ShouldStartWith, expectedErrString)
 			})
 
@@ -252,7 +265,7 @@ func TestJSONArrayMatching(t *testing.T) {
 
 		Convey("When has same structure as actual JSON", func() {
 
-			fakeJSON := []byte(`{"results": [ { "result": { "attributes": { "string_field": "fantastic" } } }, { "result": { "attributes": { "string_field": "wonderful" } } } ]}`)
+			fakeJSON := []byte(`{"results": [ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "wonderful" }, "success": true } } ]}`)
 
 			Convey("It should return success", func() {
 				success := ShouldMatchExpectedResponse(fakeJSON, expected)
@@ -271,7 +284,7 @@ func TestJSONObjectMatching(t *testing.T) {
 
 		Convey("When matches actual JSON structure", func() {
 
-			fakeJSON := []byte(`{"result": {"attributes":{ "string_field": "fantastic"} } }`)
+			fakeJSON := []byte(`{"result": {"attributes":{ "string_field": "fantastic"}, "success": true } }`)
 
 			Convey("It should return success", func() {
 				success := ShouldMatchExpectedResponse(fakeJSON, expected)

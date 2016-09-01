@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -18,6 +19,7 @@ func TypeErrorString(fieldName string, expectedType string, actualType string) s
 
 func shouldMatchExpectedArray(actual interface{}, expected interface{}, fieldName string) string {
 
+	var errorList []string
 	expectedType := reflect.TypeOf(expected)
 	actualSlice, ok := actual.([]interface{})
 	if !ok {
@@ -32,14 +34,19 @@ func shouldMatchExpectedArray(actual interface{}, expected interface{}, fieldNam
 		newFieldName := fmt.Sprintf("%v array values", fieldName)
 		equal := shouldMatchExpectedField(newActualField, newExpectedField, newFieldName)
 		if equal != success {
-			return equal
+			errorList = append(errorList, equal)
 		}
+	}
+
+	if errorList != nil {
+		return strings.Join(errorList, "\n")
 	}
 	return success
 }
 
 func shouldMatchExpectedObject(actual interface{}, expected interface{}, fieldName string) string {
 
+	var errorList []string
 	expectedType := reflect.TypeOf(expected)
 	expectedValue := reflect.ValueOf(expected)
 	actualMap, ok := actual.(map[string]interface{})
@@ -55,8 +62,12 @@ func shouldMatchExpectedObject(actual interface{}, expected interface{}, fieldNa
 		}
 		equal := shouldMatchExpectedField(newActualField, newExpectedField, newFieldName)
 		if equal != success {
-			return equal
+			errorList = append(errorList, equal)
 		}
+	}
+
+	if errorList != nil {
+		return strings.Join(errorList, "\n")
 	}
 	return success
 }
