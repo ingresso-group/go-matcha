@@ -1,4 +1,4 @@
-package json
+package matcha
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/segmentio/go-snakecase"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -15,6 +16,15 @@ const (
 
 func TypeErrorString(fieldName string, expectedType string, actualType string) string {
 	return fmt.Sprintf("Expected '%v' to be: '%v' (but was: '%v')!", fieldName, expectedType, actualType)
+}
+
+func getJSONFieldName(field reflect.StructField) string {
+	newFieldName, ok := field.Tag.Lookup("json")
+	if !ok {
+		// Get field name by looking at StructField name
+		newFieldName = snakecase.Snakecase(field.Name)
+	}
+	return newFieldName
 }
 
 func shouldMatchExpectedArray(actual interface{}, expected interface{}, fieldName string) string {
@@ -54,7 +64,7 @@ func shouldMatchExpectedObject(actual interface{}, expected interface{}, fieldNa
 		return fmt.Sprintf("Was expecting a JSON object for field: %v", fieldName)
 	}
 	for i := 0; i < expectedType.NumField(); i++ {
-		newFieldName := expectedType.Field(i).Tag.Get("json")
+		newFieldName := getJSONFieldName(expectedType.Field(i))
 		newExpectedField := expectedValue.Field(i).Interface()
 		newActualField, ok := actualMap[newFieldName]
 		if !ok {

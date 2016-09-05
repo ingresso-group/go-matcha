@@ -1,4 +1,4 @@
-package json
+package matcha
 
 import (
 	"testing"
@@ -35,6 +35,10 @@ type expectedListOfObjects []ExpectedJSONComplex
 
 type expectedNestedListOfObjects struct {
 	Results []ExpectedJSONComplex `json:"results"`
+}
+
+type expectedFieldNoTag struct {
+	StringField string
 }
 
 func TestGenericMatching(t *testing.T) {
@@ -321,4 +325,23 @@ func TestJSONObjectMatching(t *testing.T) {
 
 }
 
-// TODO - add tests for multiple errors
+func TestDefaultFieldName(t *testing.T) {
+
+	Convey("Given an expected string field without 'json' tag", t, func() {
+
+		var expected expectedFieldNoTag
+
+		Convey("When has same name and type as actual JSON", func() {
+
+			fakeJSON := []byte(`{"string_field": "some string"}`)
+
+			Convey("It should return success", func() {
+				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				So(success, ShouldEqual, "")
+			})
+
+		})
+
+	})
+
+}

@@ -3,28 +3,28 @@ package examples
 import (
 	"testing"
 
-	"github.com/ingresso-group/go-matcha/json"
+	"github.com/ingresso-group/go-matcha/matcha"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 type expectedResponseFormat struct {
 	Query struct {
-		Count   float64 `json:"count"`
-		Created string  `json:"created"`
-		Lang    string  `json:"lang"`
-		Results struct {
+		Count    float64
+		Created  string
+		Language string `json:"lang"` // Can explicitly define the name of the field we're expecting
+		Results  struct {
 			Channel struct {
 				Item struct {
 					Condition struct {
-						Code string `json:"code"`
-						Date string `json:"date"`
-						Temp string `json:"temp"`
-						Text string `json:"text"`
-					} `json:"condition"`
-				} `json:"item"`
-			} `json:"channel"`
-		} `json:"results"`
-	} `json:"query"`
+						Code string
+						Date string
+						Temp string
+						Text string
+					}
+				}
+			}
+		}
+	}
 }
 
 func TestGetWeatherData(t *testing.T) {
@@ -38,7 +38,7 @@ func TestGetWeatherData(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 			Convey("It should have same format", func() {
-				So(response, json.ShouldMatchExpectedResponse, expected)
+				So(response, matcha.ShouldMatchExpectedResponse, expected)
 			})
 		})
 	})
