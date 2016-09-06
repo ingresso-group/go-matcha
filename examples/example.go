@@ -1,20 +1,27 @@
 package examples
 
-import (
-	"io/ioutil"
-	"net/http"
-)
-
-func GetWeatherData() ([]byte, error) {
-	url := "https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%20%3D%202487889&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys"
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+func GetWeatherData() []byte {
+	// Data returned from
+	// https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%20%3D%202487889&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+	return []byte(`
+		{
+		    "query": {
+			"count": 1,
+			"created": "2016-09-06T17:56:20Z",
+			"lang": "en-GB",
+			"results": {
+			    "channel": {
+				"item": {
+				    "condition": {
+					"code": "34",
+					"date": "Tue, 06 Sep 2016 10:00 AM PDT",
+					"temp": "72",
+					"text": "Mostly Sunny"
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	`)
 }

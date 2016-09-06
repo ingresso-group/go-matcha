@@ -41,6 +41,15 @@ type expectedFieldNoTag struct {
 	StringField string
 }
 
+type expectedURL struct {
+	URL string `json:"url" pattern:"https?\:\/\/.*"`
+}
+
+type expectedJSONCapture struct {
+	NumberField float64 `capture:"captured_number"`
+	StringField string  `capture:""`
+}
+
 func TestGenericMatching(t *testing.T) {
 	Convey("Given an expected field", t, func() {
 
@@ -50,7 +59,7 @@ func TestGenericMatching(t *testing.T) {
 			fakeJSON := []byte(`{a}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldStartWith, "Was not possible to unmarshal JSON into a Go struct")
 			})
 
@@ -60,7 +69,7 @@ func TestGenericMatching(t *testing.T) {
 			fakeJSON := []byte(`{}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldStartWith, "No field 'string_field' found in response JSON")
 			})
 
@@ -71,7 +80,7 @@ func TestGenericMatching(t *testing.T) {
 			fakeJSON := []byte(`{"string_field": "some string", "another_field": 10}`)
 
 			Convey("It should ignore them and mark as success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -91,7 +100,7 @@ func TestJSONStringMatching(t *testing.T) {
 			fakeJSON := []byte(`{"string_field": "some string"}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -102,7 +111,7 @@ func TestJSONStringMatching(t *testing.T) {
 			fakeJSON := []byte(`{"string_field": 5}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := TypeErrorString("string_field", "string", "float64")
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -124,7 +133,7 @@ func TestJSONNumberMatching(t *testing.T) {
 			fakeJSON := []byte(`{"number_field": 25.2}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -135,7 +144,7 @@ func TestJSONNumberMatching(t *testing.T) {
 			fakeJSON := []byte(`{"number_field": "5"}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := TypeErrorString("number_field", "float64", "string")
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -157,7 +166,7 @@ func TestJSONBoolMatching(t *testing.T) {
 			fakeJSON := []byte(`{"boolean_field": true}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -168,7 +177,7 @@ func TestJSONBoolMatching(t *testing.T) {
 			fakeJSON := []byte(`{"boolean_field": "some string"}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := TypeErrorString("boolean_field", "bool", "string")
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -191,7 +200,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`{"array_field": ["one", "two"]}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -202,7 +211,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`{"array_field": 5}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "Was expecting an array for field: array_field"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -214,7 +223,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`{"array_field": ["one", 2]}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "Expected 'array_field array values' to be: 'string' (but was: 'float64')!"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -232,7 +241,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "wonderful" }, "success": true } } ]`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -243,7 +252,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`[ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "fantastic" } } } ]`)
 
 			Convey("It should return the expected error", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "No field 'success' found in response JSON"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -255,7 +264,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`[ { "result": {} }, { "result": { "attributes": { "string_field": "fantastic" } } } ]`)
 
 			Convey("It should return several errors", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "No field 'attributes' found in response JSON\nNo field 'success' found in response JSON"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -272,7 +281,7 @@ func TestJSONArrayMatching(t *testing.T) {
 			fakeJSON := []byte(`{"results": [ { "result": { "attributes": { "string_field": "fantastic" }, "success": true } }, { "result": { "attributes": { "string_field": "wonderful" }, "success": true } } ]}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -291,7 +300,7 @@ func TestJSONObjectMatching(t *testing.T) {
 			fakeJSON := []byte(`{"result": {"attributes":{ "string_field": "fantastic"}, "success": true } }`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
 			})
 
@@ -302,7 +311,7 @@ func TestJSONObjectMatching(t *testing.T) {
 			fakeJSON := []byte(`{"result": false}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "Was expecting a JSON object for field: result"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -314,7 +323,7 @@ func TestJSONObjectMatching(t *testing.T) {
 			fakeJSON := []byte(`{"result": [1, 2, 3]}`)
 
 			Convey("It should return an error string", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				expectedErrString := "Was expecting a JSON object for field: result"
 				So(success, ShouldStartWith, expectedErrString)
 			})
@@ -336,8 +345,34 @@ func TestDefaultFieldName(t *testing.T) {
 			fakeJSON := []byte(`{"string_field": "some string"}`)
 
 			Convey("It should return success", func() {
-				success := ShouldMatchExpectedResponse(fakeJSON, expected)
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
 				So(success, ShouldEqual, "")
+			})
+
+		})
+
+	})
+
+}
+
+func TestCapturingValues(t *testing.T) {
+
+	Convey("Given expected fields to capture", t, func() {
+
+		var expected expectedJSONCapture
+
+		Convey("When has same name and type as actual JSON", func() {
+
+			fakeJSON := []byte(`{"string_field": "I've been captured!", "number_field": 16}`)
+
+			Convey("Values should be captured", func() {
+				capturedValues := make(map[string]interface{})
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, capturedValues)
+				So(success, ShouldEqual, "")
+				// Field with custom capture name
+				So(capturedValues["captured_number"], ShouldEqual, 16)
+				// Field with no capture name, should default to field name
+				So(capturedValues["string_field"], ShouldEqual, "I've been captured!")
 			})
 
 		})

@@ -9,7 +9,7 @@ import (
 
 type expectedResponseFormat struct {
 	Query struct {
-		Count    float64
+		Count    float64 `capture:"count"`
 		Created  string
 		Language string `json:"lang"` // Can explicitly define the name of the field we're expecting
 		Results  struct {
@@ -32,13 +32,17 @@ func TestGetWeatherData(t *testing.T) {
 		var expected expectedResponseFormat
 
 		Convey("When fetching weather data", func() {
-			response, err := GetWeatherData()
+			response := GetWeatherData()
 
-			Convey("It should not return an error", func() {
-				So(err, ShouldBeNil)
-			})
 			Convey("It should have same format", func() {
-				So(response, matcha.ShouldMatchExpectedResponse, expected)
+				So(response, matcha.ShouldMatchExpectedResponse, expected, nil)
+			})
+
+			Convey("Count should be greater than zero", func() {
+				capturedValues := make(map[string]interface{})
+				So(response, matcha.ShouldMatchExpectedResponse, expected, capturedValues)
+				count := capturedValues["count"]
+				So(count, ShouldBeGreaterThan, 0)
 			})
 		})
 	})
