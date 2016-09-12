@@ -10,8 +10,8 @@ import (
 type expectedResponseFormat struct {
 	Query struct {
 		Count    float64 `capture:"count"`
-		Created  string
-		Language string `json:"lang"` // Can explicitly define the name of the field we're expecting
+		Created  string  `pattern:"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z"` // pattern matching
+		Language string  `json:"lang"`                                                       // Can explicitly define the name of the field we're expecting
 		Results  struct {
 			Channel struct {
 				Item struct {

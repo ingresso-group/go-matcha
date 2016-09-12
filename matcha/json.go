@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 
 	snakecase "github.com/segmentio/go-snakecase"
@@ -25,6 +26,33 @@ func getJSONFieldName(field reflect.StructField) string {
 		newFieldName = snakecase.Snakecase(field.Name)
 	}
 	return newFieldName
+}
+
+func shouldMatchPattern(actual interface{}, expectedField reflect.StructField) string {
+
+	// Check if we are expecting to match against a pattern for this field
+	pattern, ok := expectedField.Tag.Lookup("pattern")
+	if ok {
+		// If so, check the expected field type is a string and the actual value is also a string
+		if expectedField.Type.Kind() != reflect.String {
+			return fmt.Sprintf("'pattern' tag cannot be used on non-string fields: %v", expectedField.Name)
+		}
+		actualString, isString := actual.(string)
+		if !isString {
+			return fmt.Sprintf("Expected a string value for field: %v but instead got %v", expectedField.Name, reflect.TypeOf(actual))
+		}
+
+		// If ok, then we try to match against the expected pattern
+		matched, err := regexp.MatchString(pattern, actualString)
+		if err != nil {
+			return fmt.Sprintf("Received invalid regular expression: %v", pattern)
+		}
+		if !matched {
+			return fmt.Sprintf("%v: '%v' does not match expected pattern: %v", expectedField.Name, actualString, pattern)
+		}
+	}
+
+	return success
 }
 
 func shouldMatchExpectedArray(actual interface{}, expectedType reflect.Type, fieldName string, capturedValues map[string]interface{}) string {
@@ -52,11 +80,19 @@ func shouldMatchExpectedArray(actual interface{}, expectedType reflect.Type, fie
 	return success
 }
 
-func captureValue(capturedValues map[string]interface{}, key string, value interface{}) {
+func captureValue(capturedValues map[string]interface{}, expectedField reflect.StructField, value interface{}) {
+	// If we're not interested in capturing any values, just return
 	if capturedValues == nil {
 		return
 	}
-	capturedValues[key] = value
+
+	captureKey, ok := expectedField.Tag.Lookup("capture")
+	if ok {
+		if captureKey == "" {
+			captureKey = getJSONFieldName(expectedField)
+		}
+		capturedValues[captureKey] = value
+	}
 }
 
 func shouldMatchExpectedStructField(actual map[string]interface{}, expectedField reflect.StructField, capturedValues map[string]interface{}) string {
@@ -68,13 +104,13 @@ func shouldMatchExpectedStructField(actual map[string]interface{}, expectedField
 		return fmt.Sprintf("No field '%v' found in response JSON", fieldName)
 	}
 
-	captureKey, ok := expectedField.Tag.Lookup("capture")
-	if ok {
-		if captureKey == "" {
-			captureKey = getJSONFieldName(expectedField)
-		}
-		captureValue(capturedValues, captureKey, actualField)
+	captureValue(capturedValues, expectedField, actualField)
+
+	equal := shouldMatchPattern(actualField, expectedField)
+	if equal != success {
+		return equal
 	}
+
 	return shouldMatchExpectedField(actualField, expectedFieldType, fieldName, capturedValues)
 }
 
@@ -123,7 +159,7 @@ func shouldMatchExpectedField(actual interface{}, expectedType reflect.Type, fie
 		// Type is a JSON object
 		return shouldMatchExpectedObject(actual, expectedType, fieldName, capturedValues)
 	default:
-		fmt.Println(expectedType, "is of a type I don't know how to handle")
+		return fmt.Sprintf("'%v' is of a type I don't know how to handle", expectedType)
 	}
 	return success
 }

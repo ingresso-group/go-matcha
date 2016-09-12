@@ -42,7 +42,7 @@ type expectedFieldNoTag struct {
 }
 
 type expectedURL struct {
-	URL string `json:"url" pattern:"https?\:\/\/.*"`
+	URL string `json:"url" pattern:"https://.*"`
 }
 
 type expectedJSONCapture struct {
@@ -373,6 +373,39 @@ func TestCapturingValues(t *testing.T) {
 				So(capturedValues["captured_number"], ShouldEqual, 16)
 				// Field with no capture name, should default to field name
 				So(capturedValues["string_field"], ShouldEqual, "I've been captured!")
+			})
+
+		})
+
+	})
+
+}
+
+func TestPatternMatching(t *testing.T) {
+
+	Convey("Given expected field with pattern", t, func() {
+
+		var expected expectedURL
+
+		Convey("When actual value matches pattern", func() {
+
+			fakeJSON := []byte(`{"url": "https://www.google.com"}`)
+
+			Convey("It should return success", func() {
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
+				So(success, ShouldEqual, "")
+			})
+
+		})
+
+		Convey("When actual value doesn't match pattern", func() {
+
+			fakeJSON := []byte(`{"url": "https:www.google.com"}`)
+
+			Convey("It should return an error string", func() {
+				success := ShouldMatchExpectedResponse(fakeJSON, expected, nil)
+				expectedErrString := "URL: 'https:www.google.com' does not match expected pattern: https://.*"
+				So(success, ShouldStartWith, expectedErrString)
 			})
 
 		})
