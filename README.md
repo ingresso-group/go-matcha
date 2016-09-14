@@ -4,6 +4,12 @@ go-matcha
 Features
 --------
 
+### Data formats
+
+There are assertion methods for both JSON and XML.
+
+Note that XML matching is currently fairly naïve in that it doesn't read XML schemas or check attributes. One particular limitation of this is that if you are expecting an array of elements back, and in the actual XML there is only one element in the array, the assertion will fail (since in the absence of a schema it is impossible to know if it is an array with one element or just a single element).
+
 ### Capturing values from the response
 
 If you define a field with a `capture` tag then that field will be captured from the response. This is useful for more complex assertions.
