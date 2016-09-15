@@ -35,12 +35,12 @@ func TestGetWeatherData(t *testing.T) {
 			response := GetWeatherData()
 
 			Convey("It should have same format", func() {
-				So(response, matcha.ShouldMatchExpectedResponse, expected, nil)
+				So(response, matcha.ShouldMatchExpectedJSONResponse, expected, nil)
 			})
 
 			Convey("Count should be greater than zero", func() {
 				capturedValues := make(map[string]interface{})
-				So(response, matcha.ShouldMatchExpectedResponse, expected, capturedValues)
+				So(response, matcha.ShouldMatchExpectedJSONResponse, expected, capturedValues)
 				count := capturedValues["count"]
 				So(count, ShouldBeGreaterThan, 0)
 			})
