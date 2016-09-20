@@ -221,10 +221,9 @@ func TestXMLArrayMatching(t *testing.T) {
 
 			fakeXML := []byte(`<result><array_field>one</array_field></result>`)
 
-			Convey("It should return an error string", func() {
+			Convey("It should return success", func() {
 				success := ShouldMatchExpectedXMLResponse(fakeXML, expected, nil)
-				expectedErrString := "Was expecting an array for field: array_field"
-				So(success, ShouldStartWith, expectedErrString)
+				So(success, ShouldEqual, "")
 			})
 
 		})

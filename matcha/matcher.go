@@ -65,7 +65,14 @@ func (m *Matcher) shouldMatchExpectedArray(actual interface{}, expectedType refl
 	var errorList []string
 	actualSlice, ok := actual.([]interface{})
 	if !ok {
-		return fmt.Sprintf("Was expecting an array for field: %v", fieldName)
+		// In XML, with the absence of a schema, it is impossible to distinguish between a single
+		// field and an array with one element, so we convert to a slice and try again
+		if m.format == "xml" {
+			actualSlice = make([]interface{}, 1)
+			actualSlice[0] = actual
+		} else {
+			return fmt.Sprintf("Was expecting an array for field: %v", fieldName)
+		}
 	}
 	// Get the expected type of each element in the array
 	expectedArrayElementType := expectedType.Elem()
