@@ -11,7 +11,7 @@ func ShouldMatchExpectedXMLResponse(actual interface{}, expectedList ...interfac
 
 	// Check number of arguments
 	if len(expectedList) != 2 {
-		return fmt.Sprintf("ShouldMatchExpectedXMLResponse expects two arguments: the expected XML format as a Struct, and a map to hold captured values")
+		return fmt.Sprintf("ShouldMatchExpectedXMLResponse expects three arguments: the actual XML response as a byte slice, the expected XML format as a Struct, and a map to hold captured values")
 	}
 
 	actualXML, ok := actual.([]byte)
@@ -19,9 +19,9 @@ func ShouldMatchExpectedXMLResponse(actual interface{}, expectedList ...interfac
 		return fmt.Sprintf("Expected first argument to be a byte slice")
 	}
 	expectedResponseStruct := expectedList[0]
-	var capturedValues map[string]interface{}
+	var capturedValues CapturedValues
 	if expectedList[1] != nil {
-		capturedValues, ok = expectedList[1].(map[string]interface{})
+		capturedValues, ok = expectedList[1].(CapturedValues)
 		if !ok {
 			return fmt.Sprintf("Expected third argument to be a map[string]interface or nil")
 		}

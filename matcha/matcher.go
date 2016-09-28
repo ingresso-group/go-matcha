@@ -10,9 +10,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// CapturedValues is a map of a slice of values
+type CapturedValues map[string][]interface{}
+
 type Matcher struct {
 	format         string // Should be 'json' or 'xml'
-	capturedValues map[string]interface{}
+	capturedValues CapturedValues
 }
 
 const (
@@ -103,7 +106,7 @@ func (m *Matcher) captureValue(expectedField reflect.StructField, value interfac
 		if captureKey == "" {
 			captureKey = m.getFieldName(expectedField)
 		}
-		m.capturedValues[captureKey] = value
+		m.capturedValues[captureKey] = append(m.capturedValues[captureKey], value)
 	}
 }
 

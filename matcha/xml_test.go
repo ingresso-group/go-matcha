@@ -353,13 +353,13 @@ func TestCapturingXMLValues(t *testing.T) {
 			fakeXML := []byte(`<result><string_field>I've been captured!</string_field><number_field>16</number_field></result>`)
 
 			Convey("Values should be captured", func() {
-				capturedValues := make(map[string]interface{})
+				capturedValues := make(CapturedValues)
 				success := ShouldMatchExpectedXMLResponse(fakeXML, expected, capturedValues)
 				So(success, ShouldEqual, "")
 				// Field with custom capture name
-				So(capturedValues["captured_number"], ShouldEqual, 16)
+				So(capturedValues["captured_number"][0], ShouldEqual, 16)
 				// Field with no capture name, should default to field name
-				So(capturedValues["string_field"], ShouldEqual, "I've been captured!")
+				So(capturedValues["string_field"][0], ShouldEqual, "I've been captured!")
 			})
 
 		})

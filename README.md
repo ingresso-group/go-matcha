@@ -20,7 +20,7 @@ For example, the following field would be captured as 'count':
 Count    float64 `capture:"count"`
 ```
 
-Note that it is currently only possible to capture one value for a given field. So, for example, if you're expecting to receive an array of JSON objects back and you wish to capture the value of an element in that object, then only the value of that field in the last object in the array will be captured.
+Captured values come back as a map of slices (type = `matcha.CapturedValues`). This is so that multiple values can be captured. For example, if we are expecting a list of objects, each with a "date" field, then `capturedValues["date"]` will be a list of dates, one for each object.
 
 ### Regex pattern matching
 

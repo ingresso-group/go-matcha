@@ -366,13 +366,13 @@ func TestCapturingJSONValues(t *testing.T) {
 			fakeJSON := []byte(`{"string_field": "I've been captured!", "number_field": 16}`)
 
 			Convey("Values should be captured", func() {
-				capturedValues := make(map[string]interface{})
+				capturedValues := make(CapturedValues)
 				success := ShouldMatchExpectedJSONResponse(fakeJSON, expected, capturedValues)
 				So(success, ShouldEqual, "")
 				// Field with custom capture name
-				So(capturedValues["captured_number"], ShouldEqual, 16)
+				So(capturedValues["captured_number"][0], ShouldEqual, 16)
 				// Field with no capture name, should default to field name
-				So(capturedValues["string_field"], ShouldEqual, "I've been captured!")
+				So(capturedValues["string_field"][0], ShouldEqual, "I've been captured!")
 			})
 
 		})

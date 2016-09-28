@@ -10,7 +10,7 @@ func ShouldMatchExpectedJSONResponse(actual interface{}, expectedList ...interfa
 
 	// Check number of arguments
 	if len(expectedList) != 2 {
-		return fmt.Sprintf("ShouldMatchExpectedJSONResponse expects two arguments: the expected JSON format as a Struct, and a map to hold captured values")
+		return fmt.Sprintf("ShouldMatchExpectedJSONResponse expects three arguments: the actual JSON as a byte slice, the expected JSON format as a Struct, and a map to hold captured values")
 	}
 
 	actualJSON, ok := actual.([]byte)
@@ -18,9 +18,9 @@ func ShouldMatchExpectedJSONResponse(actual interface{}, expectedList ...interfa
 		return fmt.Sprintf("Expected first argument to be a byte slice")
 	}
 	expectedResponseStruct := expectedList[0]
-	var capturedValues map[string]interface{}
+	var capturedValues CapturedValues
 	if expectedList[1] != nil {
-		capturedValues, ok = expectedList[1].(map[string]interface{})
+		capturedValues, ok = expectedList[1].(CapturedValues)
 		if !ok {
 			return fmt.Sprintf("Expected third argument to be a map[string]interface or nil")
 		}

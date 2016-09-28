@@ -39,9 +39,9 @@ func TestGetWeatherData(t *testing.T) {
 			})
 
 			Convey("Count should be greater than zero", func() {
-				capturedValues := make(map[string]interface{})
+				capturedValues := make(matcha.CapturedValues)
 				So(response, matcha.ShouldMatchExpectedJSONResponse, expected, capturedValues)
-				count := capturedValues["count"]
+				count := capturedValues["count"][0]
 				So(count, ShouldBeGreaterThan, 0)
 			})
 		})
