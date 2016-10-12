@@ -134,7 +134,7 @@ func (m *Matcher) shouldMatchExpectedObject(actual interface{}, expectedType ref
 	var errorList []string
 	actualMap, ok := actual.(map[string]interface{})
 	if !ok {
-		return fmt.Sprintf("Was expecting an object for field: %v", fieldName)
+		return fmt.Sprintf("Was expecting an object for field: %v, but got %v", fieldName, reflect.TypeOf(actual).Kind())
 	}
 	for i := 0; i < expectedType.NumField(); i++ {
 
